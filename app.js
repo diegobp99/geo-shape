@@ -1,0 +1,1229 @@
+// ─── DOM Refs ───
+const $ = id => document.getElementById(id);
+const svgElement = $('country-svg');
+const svgGroup = $('country-group');
+const svgPath = $('country-shape');
+const svgContainer = $('svg-container');
+const hintText = $('hint-text');
+const attemptsLabel = $('attempts-label');
+const gridRows = $('grid-rows');
+const guessInput = $('guess-input');
+const submitBtn = $('submit-btn');
+const giveupBtn = $('giveup-btn');
+const nextBtn = $('next-btn');
+const autocompleteList = $('autocomplete-list');
+const statsBtn = $('stats-btn');
+const statsModal = $('stats-modal');
+const modalClose = $('modal-close');
+const shareBtn = $('share-btn');
+const infoBtn = $('info-btn');
+const infoModal = $('info-modal');
+const infoModalClose = $('info-modal-close');
+const streakDisplay = $('streak-display');
+const toast = $('toast');
+const canvas = $('confetti-canvas');
+const ctx = canvas.getContext('2d');
+const langBtns = document.querySelectorAll('.lang-btn');
+const modeBtns = document.querySelectorAll('.mode-btn');
+
+const reliefBtn = $('relief-btn');
+const ufoShip = $('ufo-ship');
+const gameContainer = $('game-container');
+
+const lockScreen = $('lock-screen');
+const lockTimer = $('lock-timer');
+const lockPracticeBtn = $('lock-practice-btn');
+const dailyResult = $('daily-result');
+const answerBanner = $('answer-banner');
+const answerBannerText = $('answer-banner-text');
+
+const dGames = $('d-games');
+const dWinrate = $('d-winrate');
+const dStreak = $('d-streak');
+const dMaxstreak = $('d-maxstreak');
+const pGames = $('p-games');
+const pWinrate = $('p-winrate');
+const pStreak = $('p-streak');
+const pMaxstreak = $('p-maxstreak');
+
+// ─── State ───
+let target = null;
+let guesses = [];
+let maxGuesses = 6;
+let isGameOver = false;
+let sessionCountries = [];
+let difficultyTier = 1;
+let sessionGameCount = 0;
+let streakCount = 0;
+let gameMode = 'daily'; // 'daily' | 'practice'
+let dailyTargetIdx = -1;
+let isDailyPlayed = false;
+let dailyPlayData = null;
+let countdownInterval = null;
+
+// ─── i18n ───
+const i18n = {
+  en: {
+    title: 'GEOSHAPE',
+    subtitle: 'Identify the mystery country',
+    stats: 'Your Stats',
+    played: 'Played',
+    winRate: 'Win Rate',
+    streak: 'Streak',
+    bestStreak: 'Best',
+    shareResults: 'Share Results',
+    copied: 'Copied!',
+    guess: 'Guess',
+    giveUp: 'Give Up',
+    nextCountry: 'Next Country \u2192',
+    country: 'Country',
+    distance: 'Distance',
+    dir: 'Dir',
+    prox: 'Prox',
+    mysteryCountry: 'Mystery Country',
+    countrySilhouette: 'Country silhouette',
+    correct: 'Correct! \u2705',
+    itWas: 'It was {name}',
+    answer: 'Answer: {name}',
+    searchPlaceholder: 'Search a country...',
+    footer: 'GeoShape \u00a9 2026',
+    guessRemaining: '{n} guess remaining',
+    guessesRemaining: '{n} guesses remaining',
+    shareLine: '{n}/{max}',
+    dailyChallenge: 'Daily Challenge',
+    daily: 'Daily',
+    practice: 'Practice',
+    comeBackTomorrow: 'Come Back Tomorrow!',
+    nextCountryIn: 'Next daily country in',
+    playPractice: 'Play Practice Mode',
+    aboutTitle: 'About GeoShape',
+    aboutStory: 'GeoShape is an open source project developed 100% with AI (OpenCode) and with zero budget. It serves as a proof of concept of how AI-assisted coding can empower developers to create complete, functional, and polished applications from scratch.',
+    aboutDeveloper: 'Developed by Diego Bouza',
+    aboutStar: 'Give it a \u2605 on GitHub if you like it!',
+    ufoDetected: '\uD83D\uDE80 UFO detected!',
+    metaDesc: 'Daily geography game — guess the country from its SVG silhouette. A free Worldle alternative with daily challenges, practice mode, and real country shapes.'
+  },
+  es: {
+    title: 'GEOSHAPE',
+    subtitle: 'Identifica el pa\u00eds misterioso',
+    stats: 'Estad\u00edsticas',
+    played: 'Jugadas',
+    winRate: '% Victoria',
+    streak: 'Racha',
+    bestStreak: 'Mejor',
+    shareResults: 'Compartir',
+    copied: '\u00a1Copiado!',
+    guess: 'Adivinar',
+    giveUp: 'Rendirse',
+    nextCountry: 'Siguiente Pa\u00eds \u2192',
+    country: 'Pa\u00eds',
+    distance: 'Distancia',
+    dir: 'Dir',
+    prox: 'Cercan\u00eda',
+    mysteryCountry: 'Pa\u00eds Misterioso',
+    countrySilhouette: 'Silueta del pa\u00eds',
+    correct: '\u00a1Correcto! \u2705',
+    itWas: 'Era {name}',
+    answer: 'Respuesta: {name}',
+    searchPlaceholder: 'Buscar un pa\u00eds...',
+    footer: 'GeoShape \u00a9 2026',
+    guessRemaining: '{n} intento restante',
+    guessesRemaining: '{n} intentos restantes',
+    shareLine: '{n}/{max}',
+    dailyChallenge: 'Desafío Diario',
+    daily: 'Diario',
+    practice: 'Práctica',
+    comeBackTomorrow: '¡Vuelve Mañana!',
+    nextCountryIn: 'Siguiente país en',
+    playPractice: 'Jugar Modo Práctica',
+    aboutTitle: 'Sobre GeoShape',
+    aboutStory: 'GeoShape es un proyecto de c\u00f3digo abierto desarrollado 100% con IA (OpenCode) y sin presupuesto. Sirve como prueba de concepto de c\u00f3mo la codificaci\u00f3n asistida por IA puede capacitar a los desarrolladores para crear aplicaciones completas, funcionales y pulidas desde cero.',
+    aboutDeveloper: 'Desarrollado por Diego Bouza',
+    aboutStar: '\u00a1Dale una \u2605 en GitHub si te gusta!',
+    ufoDetected: '\uD83D\uDE80 \u00a1OVNI detectado!',
+    metaDesc: 'Juego diario de geograf\u00eda — adivina el pa\u00eds por su silueta SVG. Una alternativa gratuita a Worldle con desaf\u00edos diarios y modo pr\u00e1ctica.'
+  }
+};
+
+let currentLang = 'en';
+let translatedNames = null;
+
+function detectLanguage() {
+  const stored = localStorage.getItem('geoshape_lang');
+  if (stored && i18n[stored]) return stored;
+  const browser = (navigator.language || 'en').slice(0, 2);
+  return i18n[browser] ? browser : 'en';
+}
+
+function getT(key, params) {
+  let text = (i18n[currentLang] && i18n[currentLang][key]) || i18n.en[key] || key;
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      text = text.replace(new RegExp('\\{' + k + '\\}', 'g'), v);
+    }
+  }
+  return text;
+}
+
+function buildTranslatedNames() {
+  const names = {};
+  try {
+    const dn = new Intl.DisplayNames([currentLang], { type: 'region', fallback: 'none' });
+    for (const c of COUNTRIES) {
+      const native = dn.of(c.iso.toUpperCase());
+      names[c.iso] = native || c.name;
+    }
+  } catch {
+    for (const c of COUNTRIES) names[c.iso] = c.name;
+  }
+  return names;
+}
+
+function getTranslatedName(country) {
+  if (!translatedNames) translatedNames = buildTranslatedNames();
+  return translatedNames[country.iso] || country.name;
+}
+
+function setLanguage(lang) {
+  if (!i18n[lang]) return;
+  currentLang = lang;
+  localStorage.setItem('geoshape_lang', lang);
+  translatedNames = null;
+
+  document.documentElement.lang = lang === 'es' ? 'es' : 'en';
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) metaDesc.content = getT('metaDesc');
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    const txt = getT(key);
+    if (el.tagName === 'INPUT') {
+      el.placeholder = txt;
+    } else {
+      el.textContent = txt;
+    }
+  });
+
+  const footerP = document.querySelector('.game-footer p');
+  if (footerP) footerP.innerHTML = getT('footer');
+
+  langBtns.forEach(btn => {
+    const isActive = btn.dataset.lang === lang;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', String(isActive));
+  });
+
+  if (!isGameOver && target) hintText.textContent = getT('countrySilhouette');
+  updateStreakDisplay();
+  updateAttemptsLabel();
+  if (guesses.length > 0) renderGuesses();
+}
+
+langBtns.forEach(btn => {
+  btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+});
+
+modeBtns.forEach(btn => {
+  btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+});
+
+lockPracticeBtn.addEventListener('click', () => switchMode('practice'));
+
+function switchMode(mode) {
+  if (mode === gameMode) return;
+  gameMode = mode;
+  modeBtns.forEach(b => {
+    const isActive = b.dataset.mode === mode;
+    b.classList.toggle('active', isActive);
+    b.setAttribute('aria-pressed', String(isActive));
+  });
+
+  const subtitle = $('header-subtitle');
+  if (subtitle) subtitle.textContent = getT(mode === 'daily' ? 'dailyChallenge' : 'practice');
+
+  hideLockScreen();
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+
+  if (mode === 'daily') {
+    const state = getDailyState();
+    if (state && state.played) {
+      isDailyPlayed = true;
+      dailyPlayData = state;
+      showLockScreen();
+      return;
+    }
+    isDailyPlayed = false;
+    dailyPlayData = null;
+    startGame();
+  } else {
+    startGame();
+  }
+}
+
+function showLockScreen(answer) {
+  const lockAnswer = $('lock-answer');
+  if (answer) {
+    lockAnswer.textContent = getT('answer', { name: answer });
+    lockAnswer.classList.remove('hidden');
+  } else {
+    lockAnswer.classList.add('hidden');
+  }
+  lockScreen.classList.remove('hidden');
+  startCountdown();
+}
+
+function hideLockScreen() {
+  lockScreen.classList.add('hidden');
+  $('lock-answer')?.classList.add('hidden');
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+}
+
+function startCountdown() {
+  if (countdownInterval) clearInterval(countdownInterval);
+  tick();
+  countdownInterval = setInterval(tick, 1000);
+}
+
+function tick() {
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  const diff = Math.max(0, tomorrow - now);
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  lockTimer.textContent =
+    String(h).padStart(2, '0') + ':' +
+    String(m).padStart(2, '0') + ':' +
+    String(s).padStart(2, '0');
+  if (diff <= 0 && countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+}
+
+// ─── Haversine ───
+const toRad = deg => deg * (Math.PI / 180);
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function bearing(lat1, lon1, lat2, lon2) {
+  const dLon = toRad(lon2 - lon1);
+  const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+  const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+    Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
+function directionFromBearing(b) {
+  const dirs = [
+    ['N', '\u2191'], ['NNE', '\u2197'], ['NE', '\u2197'], ['ENE', '\u2197'],
+    ['E', '\u2192'], ['ESE', '\u2198'], ['SE', '\u2198'], ['SSE', '\u2198'],
+    ['S', '\u2193'], ['SSW', '\u2199'], ['SW', '\u2199'], ['WSW', '\u2199'],
+    ['W', '\u2190'], ['WNW', '\u2196'], ['NW', '\u2196'], ['NNW', '\u2196']
+  ];
+  const idx = Math.round(b / 22.5) % 16;
+  return dirs[idx];
+}
+
+function proximityPercent(dist) {
+  const MAX_DIST = 20000;
+  if (dist <= 0) return 100;
+  const p = Math.max(0, 100 - (dist / MAX_DIST) * 100);
+  return Math.round(Math.min(100, p));
+}
+
+function proxClass(pct) {
+  if (pct >= 70) return 'prox-high';
+  if (pct >= 40) return 'prox-mid';
+  if (pct >= 15) return 'prox-low';
+  return 'prox-cold';
+}
+
+// ─── Difficulty Curve ───
+function getAvailableForTier(tier) {
+  return COUNTRIES.filter(c => c.difficulty <= tier);
+}
+
+function pickNextCountry() {
+  const available = getAvailableForTier(difficultyTier)
+    .filter(c => !sessionCountries.includes(c.name));
+
+  if (available.length === 0) {
+    sessionCountries.length = 0;
+    return pickNextCountry();
+  }
+
+  const idx = Math.floor(Math.random() * available.length);
+  const picked = available[idx];
+  sessionCountries.push(picked.name);
+  return picked;
+}
+
+function updateDifficulty() {
+  if (streakCount >= 5) {
+    difficultyTier = 3;
+  } else if (streakCount >= 2) {
+    difficultyTier = 2;
+  } else {
+    difficultyTier = 1;
+  }
+}
+
+// ─── Stats (localStorage) ───
+function getStats() {
+  try {
+    return JSON.parse(localStorage.getItem('geoshape_stats')) || {
+      gamesPlayed: 0, gamesWon: 0, currentStreak: 0, maxStreak: 0
+    };
+  } catch { return { gamesPlayed: 0, gamesWon: 0, currentStreak: 0, maxStreak: 0 }; }
+}
+
+function saveStats(s) {
+  localStorage.setItem('geoshape_stats', JSON.stringify(s));
+}
+
+function updateStatsDisplay() {
+  const s = getStats();
+  pGames.textContent = s.gamesPlayed;
+  pWinrate.textContent = s.gamesPlayed > 0
+    ? Math.round((s.gamesWon / s.gamesPlayed) * 100) + '%'
+    : '0%';
+  pStreak.textContent = s.currentStreak;
+  pMaxstreak.textContent = s.maxStreak;
+
+  const ds = getDailyStats();
+  dGames.textContent = ds.gamesPlayed;
+  dWinrate.textContent = ds.gamesPlayed > 0
+    ? Math.round((ds.gamesWon / ds.gamesPlayed) * 100) + '%'
+    : '0%';
+  dStreak.textContent = ds.currentStreak;
+  dMaxstreak.textContent = ds.maxStreak;
+}
+
+// ─── Daily Mode ───
+function hashString(str) {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return Math.abs(hash >>> 0);
+}
+
+function getTodayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+}
+
+function getDailyIndex() {
+  return hashString(getTodayStr()) % COUNTRIES.length;
+}
+
+function getDailyState() {
+  try {
+    const raw = localStorage.getItem('geoshape_daily');
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (data.date !== getTodayStr()) return null;
+    return data;
+  } catch { return null; }
+}
+
+function saveDailyState(data) {
+  data.date = getTodayStr();
+  localStorage.setItem('geoshape_daily', JSON.stringify(data));
+}
+
+function getDailyStats() {
+  try {
+    return JSON.parse(localStorage.getItem('geoshape_daily_stats')) || {
+      gamesPlayed: 0, gamesWon: 0, currentStreak: 0, maxStreak: 0,
+      guessDistribution: [0, 0, 0, 0, 0, 0]
+    };
+  } catch {
+    return { gamesPlayed: 0, gamesWon: 0, currentStreak: 0, maxStreak: 0,
+      guessDistribution: [0, 0, 0, 0, 0, 0] };
+  }
+}
+
+function saveDailyStats(s) {
+  localStorage.setItem('geoshape_daily_stats', JSON.stringify(s));
+}
+
+// ─── Confetti ───
+let particles = [];
+let confettiRunning = false;
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class Particle {
+  constructor() {
+    this.reset();
+  }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = -20;
+    this.w = Math.random() * 10 + 5;
+    this.h = Math.random() * 6 + 3;
+    this.color = ['#4ade80', '#60a5fa', '#facc15', '#fb923c', '#a78bfa', '#f472b6', '#34d399'][Math.floor(Math.random() * 7)];
+    this.vy = Math.random() * 3 + 2;
+    this.vx = (Math.random() - 0.5) * 3;
+    this.rot = Math.random() * 360;
+    this.rotSpeed = (Math.random() - 0.5) * 10;
+    this.swing = Math.random() * 0.03;
+    this.swingPhase = Math.random() * Math.PI * 2;
+    this.life = 1;
+    this.decay = Math.random() * 0.003 + 0.002;
+  }
+  update() {
+    this.vy += 0.04;
+    this.x += this.vx + Math.sin(this.swingPhase) * this.swing * 60;
+    this.y += this.vy;
+    this.rot += this.rotSpeed;
+    this.swingPhase += 0.02;
+    this.life -= this.decay;
+  }
+  draw() {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rot * Math.PI / 180);
+    ctx.globalAlpha = Math.max(0, this.life);
+    ctx.fillStyle = this.color;
+    ctx.fillRect(-this.w / 2, -this.h / 2, this.w, this.h);
+    ctx.restore();
+  }
+}
+
+function spawnConfetti(count = 80) {
+  for (let i = 0; i < count; i++) {
+    const p = new Particle();
+    p.x = Math.random() * canvas.width;
+    p.y = Math.random() * canvas.height * -1;
+    particles.push(p);
+  }
+}
+
+function animateConfetti() {
+  if (!confettiRunning && particles.length === 0) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    particles[i].update();
+    particles[i].draw();
+    if (particles[i].life <= 0 || particles[i].y > canvas.height + 20) {
+      particles.splice(i, 1);
+    }
+  }
+
+  if (particles.length > 0 || confettiRunning) {
+    requestAnimationFrame(animateConfetti);
+  }
+}
+
+function startConfetti(duration = 4000) {
+  confettiRunning = true;
+  spawnConfetti(100);
+  animateConfetti();
+  setTimeout(() => {
+    confettiRunning = false;
+  }, duration);
+}
+
+// ─── Shake Effect ───
+function shakeScreen() {
+  const app = document.getElementById('app');
+  app.classList.remove('shake');
+  void app.offsetWidth;
+  app.classList.add('shake');
+  setTimeout(() => app.classList.remove('shake'), 500);
+}
+
+// ─── Toast ───
+let toastTimeout = null;
+
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.remove('hidden');
+  toast.classList.remove('toast-out');
+  void toast.offsetWidth;
+  toast.classList.add('toast-in');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove('toast-in');
+    toast.classList.add('toast-out');
+    setTimeout(() => toast.classList.add('hidden'), 300);
+  }, 2000);
+}
+
+// ─── Game Logic ───
+function startGame() {
+  if (gameMode === 'daily') {
+    const idx = getDailyIndex();
+    target = COUNTRIES[idx];
+    dailyTargetIdx = idx;
+    const state = getDailyState();
+    if (state && state.played) {
+      isDailyPlayed = true;
+      dailyPlayData = state;
+      showLockScreen();
+      return;
+    }
+    isDailyPlayed = false;
+    dailyPlayData = null;
+  } else {
+    target = pickNextCountry();
+  }
+
+  guesses = [];
+  isGameOver = false;
+  sessionGameCount++;
+
+  svgElement.setAttribute('viewBox', target.svgViewBox || '0 0 200 200');
+  svgGroup.setAttribute('transform', target.svgTransform || '');
+  svgPath.setAttribute('d', target.svg);
+  svgPath.classList.remove('glow');
+  svgPath.style.fill = 'var(--accent)';
+
+  hintText.textContent = getT('countrySilhouette');
+
+  gridRows.innerHTML = '';
+  for (let i = 0; i < maxGuesses; i++) {
+    gridRows.innerHTML += `
+      <div class="guess-row" data-idx="${i}" style="opacity:1;transform:none;animation:none;">
+        <div class="guess-cell name-cell">&nbsp;</div>
+        <div class="guess-cell">&nbsp;</div>
+        <div class="guess-cell dir-cell">&nbsp;</div>
+        <div class="guess-cell">&nbsp;</div>
+      </div>`;
+  }
+
+  guessInput.value = '';
+  guessInput.disabled = false;
+  submitBtn.disabled = false;
+  giveupBtn.disabled = false;
+  nextBtn.classList.add('hidden');
+  autocompleteList.classList.remove('show');
+  guessInput.focus();
+  hideAnswerBanner();
+
+  updateStreakDisplay();
+  updateAttemptsLabel();
+}
+
+function updateStreakDisplay() {
+  if (streakCount > 0) {
+    streakDisplay.textContent = `\uD83D\uDD25 ${getT('streak')}: ${streakCount}`;
+  } else {
+    streakDisplay.textContent = '';
+  }
+}
+
+function updateAttemptsLabel() {
+  const remaining = maxGuesses - guesses.length;
+  if (remaining <= 0) {
+    attemptsLabel.textContent = '';
+    return;
+  }
+  if (remaining === 1) {
+    attemptsLabel.textContent = getT('guessRemaining', { n: 1 });
+  } else {
+    attemptsLabel.textContent = getT('guessesRemaining', { n: remaining });
+  }
+}
+
+function submitGuess(name) {
+  if (isGameOver || !target) return;
+
+  const trimmed = name.trim();
+  if (!trimmed) {
+    shakeScreen();
+    return;
+  }
+
+  const matched = COUNTRIES.find(c => c.name.toLowerCase() === trimmed.toLowerCase());
+  if (!matched) {
+    guessInput.value = '';
+    shakeScreen();
+    return;
+  }
+
+  if (guesses.some(g => g.name.toLowerCase() === matched.name.toLowerCase())) {
+    shakeScreen();
+    return;
+  }
+
+  const dist = Math.round(haversine(matched.lat, matched.lng, target.lat, target.lng));
+  const bear = bearing(matched.lat, matched.lng, target.lat, target.lng);
+  const [dirName, dirArrow] = directionFromBearing(bear);
+  const prox = proximityPercent(dist);
+
+  const guess = {
+    name: matched.name,
+    iso: matched.iso,
+    distance: dist,
+    direction: dirArrow,
+    directionName: dirName,
+    proximity: prox
+  };
+
+  guesses.push(guess);
+  renderGuesses();
+  guessInput.value = '';
+  guessInput.focus();
+
+  const isCorrect = matched.name === target.name;
+
+  if (isCorrect) {
+    handleWin();
+  } else if (guesses.length >= maxGuesses) {
+    handleLose();
+  }
+
+  updateAttemptsLabel();
+  autocompleteList.classList.remove('show');
+}
+
+function renderGuesses() {
+  const rows = gridRows.querySelectorAll('.guess-row');
+
+  rows.forEach((row, idx) => {
+    if (idx < guesses.length) {
+      const g = guesses[idx];
+      const cells = row.querySelectorAll('.guess-cell');
+      cells[0].textContent = getTranslatedName(g);
+      cells[1].textContent = g.distance.toLocaleString() + ' km';
+      cells[2].textContent = g.direction;
+      cells[3].textContent = g.proximity + '%';
+      cells[3].className = 'guess-cell ' + proxClass(g.proximity);
+
+      row.style.animation = 'none';
+      void row.offsetWidth;
+      row.style.animation = 'slideInAndFade 0.35s ease forwards';
+      row.style.animationDelay = '0s';
+    } else {
+      const cells = row.querySelectorAll('.guess-cell');
+      cells[0].textContent = '\u00a0';
+      cells[1].textContent = '\u00a0';
+      cells[2].textContent = '\u00a0';
+      cells[3].textContent = '\u00a0';
+      cells[3].className = 'guess-cell';
+      row.style.animation = 'none';
+    }
+  });
+}
+
+function handleWin() {
+  isGameOver = true;
+  guessInput.disabled = true;
+  submitBtn.disabled = true;
+  giveupBtn.disabled = true;
+
+  svgPath.classList.add('glow');
+  svgPath.style.fill = 'var(--accent)';
+  document.querySelector('.logo-svg')?.classList.add('win-pulse');
+  hintText.textContent = getT('correct');
+
+  if (gameMode === 'daily') {
+    isDailyPlayed = true;
+    dailyPlayData = { played: true, won: true, answer: target.name, guesses: guesses.slice() };
+    saveDailyState(dailyPlayData);
+
+    const ds = getDailyStats();
+    ds.gamesPlayed++;
+    ds.gamesWon++;
+    ds.currentStreak++;
+    ds.maxStreak = Math.max(ds.maxStreak, ds.currentStreak);
+    const idx = Math.min(guesses.length - 1, 5);
+    ds.guessDistribution[idx]++;
+    saveDailyStats(ds);
+  } else {
+    streakCount++;
+    const s = getStats();
+    s.gamesPlayed++;
+    s.gamesWon++;
+    s.currentStreak = streakCount;
+    s.maxStreak = Math.max(s.maxStreak, streakCount);
+    saveStats(s);
+  }
+
+  updateStatsDisplay();
+  startConfetti(4000);
+  if (gameMode !== 'daily') updateDifficulty();
+
+  setTimeout(() => {
+    if (gameMode === 'daily') {
+      showLockScreen();
+    } else {
+      nextBtn.classList.remove('hidden');
+      nextBtn.textContent = getT('nextCountry');
+      nextBtn.focus();
+    }
+  }, 1200);
+}
+
+function showAnswerBanner(name) {
+  answerBannerText.textContent = getT('answer', { name });
+  answerBanner.classList.remove('hidden');
+}
+
+function hideAnswerBanner() {
+  answerBanner.classList.add('hidden');
+}
+
+function handleLose() {
+  isGameOver = true;
+  guessInput.disabled = true;
+  submitBtn.disabled = true;
+  giveupBtn.disabled = true;
+
+  svgPath.style.fill = '#ef4444';
+  showAnswerBanner(getTranslatedName(target));
+
+  if (gameMode === 'daily') {
+    isDailyPlayed = true;
+    dailyPlayData = { played: true, won: false, answer: target.name, guesses: guesses.slice() };
+    saveDailyState(dailyPlayData);
+
+    const ds = getDailyStats();
+    ds.gamesPlayed++;
+    ds.currentStreak = 0;
+    saveDailyStats(ds);
+  } else {
+    streakCount = 0;
+    const s = getStats();
+    s.gamesPlayed++;
+    s.currentStreak = 0;
+    saveStats(s);
+  }
+
+  updateStatsDisplay();
+  if (gameMode !== 'daily') updateDifficulty();
+
+  setTimeout(() => {
+    if (gameMode === 'daily') {
+      showLockScreen(getTranslatedName(target));
+    } else {
+      nextBtn.classList.remove('hidden');
+      nextBtn.textContent = getT('nextCountry');
+      nextBtn.focus();
+    }
+  }, 2500);
+}
+
+// ─── Give Up ───
+function handleGiveUp() {
+  if (isGameOver) return;
+  isGameOver = true;
+  guessInput.disabled = true;
+  submitBtn.disabled = true;
+  giveupBtn.disabled = true;
+
+  svgPath.style.fill = '#ef4444';
+  showAnswerBanner(getTranslatedName(target));
+
+  if (gameMode === 'daily') {
+    isDailyPlayed = true;
+    dailyPlayData = { played: true, won: false, answer: target.name, guesses: guesses.slice() };
+    saveDailyState(dailyPlayData);
+
+    const ds = getDailyStats();
+    ds.gamesPlayed++;
+    ds.currentStreak = 0;
+    saveDailyStats(ds);
+  } else {
+    streakCount = 0;
+    const s = getStats();
+    s.gamesPlayed++;
+    s.currentStreak = 0;
+    saveStats(s);
+  }
+
+  updateStatsDisplay();
+  if (gameMode !== 'daily') updateDifficulty();
+
+  setTimeout(() => {
+    if (gameMode === 'daily') {
+      showLockScreen(getTranslatedName(target));
+    } else {
+      nextBtn.classList.remove('hidden');
+      nextBtn.textContent = getT('nextCountry');
+    }
+  }, 2500);
+
+  if (gameMode !== 'daily') {
+    setTimeout(() => {
+      updateStatsDisplay();
+      const modalAnswer = $('modal-answer');
+      modalAnswer.textContent = getT('answer', { name: getTranslatedName(target) });
+      modalAnswer.classList.remove('hidden');
+      statsModal.style.display = 'flex';
+      requestAnimationFrame(() => statsModal.classList.add('show'));
+    }, 2500);
+  }
+}
+
+// ─── Autocomplete ───
+let selectedIdx = -1;
+
+function filterCountries(query) {
+  if (!query || isGameOver) return [];
+  const q = query.toLowerCase();
+  const guessedNames = new Set(guesses.map(g => g.name.toLowerCase()));
+  return COUNTRIES
+    .filter(c => !guessedNames.has(c.name.toLowerCase()))
+    .filter(c => {
+      const trans = getTranslatedName(c).toLowerCase();
+      return trans.startsWith(q);
+    })
+    .slice(0, 10);
+}
+
+function showAutocomplete(results) {
+  autocompleteList.innerHTML = '';
+  selectedIdx = -1;
+
+  if (results.length === 0 || isGameOver) {
+    autocompleteList.classList.remove('show');
+    return;
+  }
+
+  results.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'autocomplete-item';
+    div.textContent = getTranslatedName(c);
+    div.dataset.name = c.name;
+    div.addEventListener('click', () => {
+      guessInput.value = c.name;
+      autocompleteList.classList.remove('show');
+      submitBtn.focus();
+    });
+    autocompleteList.appendChild(div);
+  });
+
+  autocompleteList.classList.add('show');
+}
+
+guessInput.addEventListener('input', () => {
+  const val = guessInput.value;
+  const results = filterCountries(val);
+  showAutocomplete(results);
+});
+
+guessInput.addEventListener('keydown', (e) => {
+  const items = autocompleteList.querySelectorAll('.autocomplete-item');
+  const isOpen = autocompleteList.classList.contains('show');
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    selectedIdx = Math.min(selectedIdx + 1, items.length - 1);
+    updateSelection(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    selectedIdx = Math.max(selectedIdx - 1, -1);
+    updateSelection(items);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (selectedIdx >= 0 && items[selectedIdx]) {
+      guessInput.value = items[selectedIdx].dataset.name;
+      autocompleteList.classList.remove('show');
+      submitGuess(guessInput.value);
+    } else if (guessInput.value.trim()) {
+      submitGuess(guessInput.value);
+    }
+  } else if (e.key === 'Escape') {
+    autocompleteList.classList.remove('show');
+  } else if (e.key === 'Tab' && isOpen && items.length > 0) {
+    e.preventDefault();
+    const idx = selectedIdx >= 0 ? selectedIdx : 0;
+    guessInput.value = items[idx].dataset.name;
+    autocompleteList.classList.remove('show');
+  }
+});
+
+function updateSelection(items) {
+  items.forEach((item, i) => {
+    item.classList.toggle('selected', i === selectedIdx);
+    if (i === selectedIdx) {
+      item.scrollIntoView({ block: 'nearest' });
+    }
+  });
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.autocomplete-wrapper')) {
+    autocompleteList.classList.remove('show');
+  }
+});
+
+// ─── Submit Button ───
+submitBtn.addEventListener('click', () => {
+  submitGuess(guessInput.value);
+});
+
+// ─── Give Up Button ───
+giveupBtn.addEventListener('click', handleGiveUp);
+
+// ─── 3D Relief Toggle ───
+reliefBtn.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  reliefBtn.classList.toggle('active-mode');
+  svgElement.classList.toggle('relief-mode');
+});
+
+// ─── Next Country (Endless Mode) ───
+nextBtn.addEventListener('click', () => {
+  startGame();
+});
+
+// ─── Stats Modal ───
+statsBtn.addEventListener('click', () => {
+  updateStatsDisplay();
+  $('modal-answer')?.classList.add('hidden');
+  statsModal.style.display = 'flex';
+  requestAnimationFrame(() => statsModal.classList.add('show'));
+});
+
+function hideStatsModal() {
+  statsModal.classList.remove('show');
+  $('modal-answer')?.classList.add('hidden');
+}
+
+modalClose.addEventListener('click', hideStatsModal);
+
+statsModal.addEventListener('click', (e) => {
+  if (e.target === statsModal) {
+    hideStatsModal();
+  }
+});
+
+// ─── Info Modal ───
+infoBtn.addEventListener('click', () => {
+  infoModal.style.display = 'flex';
+  requestAnimationFrame(() => infoModal.classList.add('show'));
+});
+
+infoModalClose.addEventListener('click', () => {
+  infoModal.classList.remove('show');
+});
+
+infoModal.addEventListener('click', (e) => {
+  if (e.target === infoModal) {
+    infoModal.classList.remove('show');
+  }
+});
+
+// ─── Hamburger Menu ───
+const hamburgerBtn = $('hamburger-btn');
+const headerControlsInner = $('header-controls-inner');
+
+hamburgerBtn.addEventListener('click', () => {
+  headerControlsInner.classList.toggle('show');
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.header-controls')) {
+    headerControlsInner.classList.remove('show');
+  }
+});
+
+// ─── Mobile Silhouette Touch Glow ───
+svgContainer.addEventListener('touchstart', () => {
+  svgElement.classList.add('glow-active');
+}, { passive: true });
+
+svgContainer.addEventListener('touchend', () => {
+  svgElement.classList.remove('glow-active');
+}, { passive: true });
+
+// ─── Easter Egg Helpers ───
+function showEasterToast(msg, cls) {
+  toast.textContent = msg;
+  toast.className = 'toast';
+  if (cls) toast.classList.add(cls);
+  toast.classList.remove('hidden', 'toast-out');
+  void toast.offsetWidth;
+  toast.classList.add('toast-in');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove('toast-in');
+    toast.classList.add('toast-out');
+    setTimeout(() => toast.classList.add('hidden'), 300);
+  }, 2500);
+}
+
+// ─── Party Mode ───
+let partyBuffer = '';
+function activatePartyMode() {
+  partyBuffer = '';
+  svgElement.classList.add('party-spin');
+  showEasterToast('\uD83C\uDF89 PARTY MODE ACTIVATED!', 'party-toast');
+  const origAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+  const origGlow = getComputedStyle(document.documentElement).getPropertyValue('--accent-glow').trim();
+  const origDim = getComputedStyle(document.documentElement).getPropertyValue('--accent-dim').trim();
+  const colors = ['#ff006e','#8338ec','#3a86ff','#00f5d4','#fb5607','#ffbe0b','#ff006e'];
+  let step = 0;
+  const cycle = setInterval(() => {
+    const c = colors[step % colors.length];
+    document.documentElement.style.setProperty('--accent', c);
+    document.documentElement.style.setProperty('--accent-dim', c);
+    document.documentElement.style.setProperty('--accent-glow', c + '4d');
+    step++;
+  }, 200);
+  setTimeout(() => {
+    clearInterval(cycle);
+    document.documentElement.style.setProperty('--accent', origAccent);
+    document.documentElement.style.setProperty('--accent-dim', origDim);
+    document.documentElement.style.setProperty('--accent-glow', origGlow);
+    svgElement.classList.remove('party-spin');
+  }, 5000);
+}
+
+function isMobileDevice() {
+  return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+}
+
+// ─── UFO Mode ───
+let ufoBuffer = '';
+function activateUfoMode() {
+  if (isMobileDevice()) {
+    showEasterToast('\uD83D\uDC7B UFO!', '');
+    return;
+  }
+  ufoBuffer = '';
+  ufoShip.classList.remove('flying');
+  void ufoShip.offsetWidth;
+  ufoShip.classList.add('flying');
+  svgElement.classList.add('ufo-glow');
+  setTimeout(() => {
+    svgElement.classList.remove('ufo-glow');
+    ufoShip.classList.remove('flying');
+  }, 3000);
+  showEasterToast(getT('ufoDetected'));
+}
+
+// ─── Master Key Handler ───
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    statsModal.classList.remove('show');
+    $('modal-answer')?.classList.add('hidden');
+    infoModal.classList.remove('show');
+    autocompleteList.classList.remove('show');
+    headerControlsInner?.classList.remove('show');
+  }
+
+  // Ignore easter egg triggers when typing in input fields
+  if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+    return;
+  }
+
+  // Party mode buffer
+  partyBuffer += e.key.toLowerCase();
+  if (partyBuffer.length > 8) partyBuffer = partyBuffer.slice(-8);
+  if (partyBuffer.endsWith('party') || (e.shiftKey && (e.key === 'p' || e.key === 'P'))) {
+    activatePartyMode();
+    return;
+  }
+
+  // UFO mode buffer
+  ufoBuffer += e.key.toLowerCase();
+  if (ufoBuffer.length > 8) ufoBuffer = ufoBuffer.slice(-8);
+  if (ufoBuffer.endsWith('ufo') || ufoBuffer.endsWith('alien')) {
+    activateUfoMode();
+    return;
+  }
+});
+
+// ─── Share ───
+function copyToClipboard(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast(getT('copied'));
+    }).catch(() => {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  showToast(getT('copied'));
+}
+
+function getShareText() {
+  const s = getStats();
+  const winRate = s.gamesPlayed > 0
+    ? Math.round((s.gamesWon / s.gamesPlayed) * 100)
+    : 0;
+
+  let shareGrid = '';
+  guesses.forEach(g => {
+    if (g.proximity >= 70) shareGrid += '\uD83D\uDFE9';
+    else if (g.proximity >= 40) shareGrid += '\uD83D\uDFE8';
+    else if (g.proximity >= 15) shareGrid += '\uD83D\uDFE7';
+    else shareGrid += '\u2B1C';
+    shareGrid += '\n';
+  });
+
+  return [
+    `\uD83C\uDF0D ${getT('shareLine', { n: guesses.length, max: maxGuesses })}`,
+    '',
+    shareGrid.trim(),
+    '',
+    `\uD83D\uDCCA ${s.gamesPlayed} \u00b7 ${winRate}% \u00b7 \uD83D\uDD25${s.currentStreak}`
+  ].join('\n');
+}
+
+shareBtn.addEventListener('click', () => {
+  updateStatsDisplay();
+  const text = getShareText();
+  if (navigator.share && navigator.canShare && navigator.canShare({ text })) {
+    navigator.share({ text }).catch(() => {});
+  } else {
+    copyToClipboard(text);
+  }
+});
+
+// ─── Keyboard shortcut ───
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !isGameOver && !guessInput.value && document.activeElement !== guessInput && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+    guessInput.focus();
+  }
+});
+
+// ─── Init ───
+currentLang = detectLanguage();
+setLanguage(currentLang);
+updateStatsDisplay();
+startGame();

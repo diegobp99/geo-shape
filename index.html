@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeoShape — Daily Geography Game | Guess the Country Map Silhouette</title>
+  <meta name="description" content="Daily geography game — guess the country from its SVG silhouette. A free Worldle alternative with daily challenges, practice mode, and real country shapes.">
+  <link rel="canonical" href="https://geo-shape.pages.dev/">
+  <meta property="og:title" content="GeoShape — Daily Geography Game">
+  <meta property="og:description" content="Guess the country from its SVG silhouette. A free Worldle alternative with daily challenges and practice mode.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://geo-shape.pages.dev/">
+  <meta property="og:image" content="https://geo-shape.pages.dev/social-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="GeoShape — Daily Geography Game">
+  <meta name="twitter:description" content="Guess the country from its silhouette. A free Worldle alternative with daily challenges.">
+  <meta name="twitter:image" content="https://geo-shape.pages.dev/social-preview.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5' fill='none' stroke='%234ade80' stroke-width='4' stroke-linejoin='round'/><circle cx='50' cy='50' r='30' fill='none' stroke='%2322d3ee' stroke-width='2.5' opacity='0.8'/><polygon points='50,42 58,50 50,58 42,50' fill='%234ade80'/></svg>">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "GeoShape",
+    "description": "Daily geography game — guess the country from its SVG silhouette. A free Worldle alternative with daily challenges and practice mode.",
+    "applicationCategory": "Game",
+    "browserRequirements": "Requires JavaScript. Modern browser with ES6+ support.",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Diego Bouza"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="header-left">
+        <h1 class="title">
+          <svg class="logo-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="GeoShape logo">
+            <defs>
+              <linearGradient id="lg-h" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="var(--accent)"/>
+                <stop offset="100%" stop-color="var(--cyan)"/>
+              </linearGradient>
+              <linearGradient id="lg-h2" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="var(--accent)"/>
+                <stop offset="100%" stop-color="#818cf8"/>
+              </linearGradient>
+            </defs>
+            <polygon points="100,10 180,55 180,145 100,190 20,145 20,55" stroke="url(#lg-h)" stroke-width="3" stroke-linejoin="round" class="logo-hex"/>
+            <circle cx="100" cy="100" r="60" stroke="url(#lg-h2)" stroke-width="2" opacity="0.75" class="logo-globe"/>
+            <ellipse cx="100" cy="100" rx="60" ry="16" stroke="url(#lg-h)" stroke-width="1.2" opacity="0.45" class="logo-grid"/>
+            <ellipse cx="100" cy="100" rx="60" ry="34" stroke="url(#lg-h)" stroke-width="1" opacity="0.25" class="logo-grid"/>
+            <ellipse cx="100" cy="100" rx="16" ry="60" stroke="url(#lg-h)" stroke-width="1.2" opacity="0.45" class="logo-grid"/>
+            <ellipse cx="100" cy="100" rx="34" ry="60" stroke="url(#lg-h)" stroke-width="1" opacity="0.25" class="logo-grid"/>
+            <polygon points="100,85 115,100 100,115 85,100" fill="url(#lg-h)" class="logo-pin"/>
+          </svg>
+          <span class="title-text">
+            <span class="title-geo">GEO</span>
+            <span class="title-shape">SHAPE</span>
+          </span>
+        </h1>
+        <span class="title-sub" id="header-subtitle" data-i18n="dailyChallenge">Daily Challenge</span>
+      </div>
+      <div class="header-controls">
+        <div class="header-controls-inner" id="header-controls-inner">
+          <div id="mode-toggle" class="mode-toggle" role="group" aria-label="Game mode">
+            <button class="mode-btn active" data-mode="daily" data-i18n="daily" aria-pressed="true">Daily</button>
+            <button class="mode-btn" data-mode="practice" data-i18n="practice" aria-pressed="false">Practice</button>
+          </div>
+          <div id="lang-toggle" class="lang-toggle" role="group" aria-label="Language selector">
+            <button class="lang-btn active" data-lang="en" aria-pressed="true">EN</button>
+            <button class="lang-btn" data-lang="es" aria-pressed="false">ES</button>
+          </div>
+          <button id="stats-btn" class="icon-btn" title="Statistics" aria-label="Statistics">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="10" width="4" height="11" rx="1"/>
+              <rect x="10" y="6" width="4" height="15" rx="1"/>
+              <rect x="17" y="2" width="4" height="19" rx="1"/>
+            </svg>
+          </button>
+          <button id="info-btn" class="icon-btn" title="About" aria-label="About">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </button>
+        </div>
+        <button id="hamburger-btn" class="hamburger-btn" aria-label="Menu">&#9776;</button>
+      </div>
+    </header>
+
+    <div id="streak-display" class="streak-display"></div>
+
+    <main>
+    <!-- Lock Screen -->
+    <div id="lock-screen" class="lock-screen hidden">
+      <div class="lock-card">
+        <div class="lock-icon">🔒</div>
+        <h2 class="lock-title" data-i18n="comeBackTomorrow">Come Back Tomorrow!</h2>
+        <p class="lock-subtitle" data-i18n="nextCountryIn">Next daily country in</p>
+        <div class="lock-timer" id="lock-timer">--:--:--</div>
+        <div id="lock-answer" class="lock-answer hidden"></div>
+        <div class="lock-practice-link" id="lock-practice-area">
+          <button id="lock-practice-btn" class="practice-link" data-i18n="playPractice" aria-label="Play practice mode">Play Practice Mode</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game -->
+    <div id="game-container" class="game-layout">
+      <div class="map-panel">
+        <div id="svg-container" class="svg-container">
+          <div class="svg-glow-ring"></div>
+          <button id="relief-btn" class="relief-btn" title="Toggle 3D Relief" aria-label="Toggle 3D relief mode">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/>
+              <line x1="12" y1="22" x2="12" y2="15.5"/>
+              <polyline points="22 8.5 12 15.5 2 8.5"/>
+              <polyline points="2 15.5 12 8.5 22 15.5"/>
+            </svg>
+          </button>
+          <svg id="country-svg" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+            <g id="country-group">
+              <path id="country-shape" d="" fill="var(--accent)" opacity="0.9" stroke="var(--accent-glow)" stroke-width="0.3"/>
+            </g>
+          </svg>
+          <div id="hint-text" class="hint-text" data-i18n="countrySilhouette">Country silhouette</div>
+        </div>
+        <div class="map-info">
+          <span class="map-label" id="map-label" data-i18n="mysteryCountry">Mystery Country</span>
+          <span class="map-attempts" id="attempts-label">6 guesses remaining</span>
+        </div>
+      </div>
+
+      <div class="game-panel">
+        <div id="guess-grid" class="guess-grid">
+          <div class="grid-header">
+            <span class="header-cell guess-cell-label" data-i18n="country">Country</span>
+            <span class="header-cell" data-i18n="distance">Distance</span>
+            <span class="header-cell" data-i18n="dir">Dir</span>
+            <span class="header-cell" data-i18n="prox">Prox</span>
+          </div>
+          <div id="grid-rows" class="grid-rows"></div>
+        </div>
+
+        <div id="answer-banner" class="answer-banner hidden">
+          <span id="answer-banner-text"></span>
+        </div>
+        <div id="input-area" class="input-area">
+          <div class="autocomplete-wrapper">
+            <input
+              type="text"
+              id="guess-input"
+              class="guess-input"
+              data-i18n="searchPlaceholder"
+              placeholder="Search a country..."
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Type a country name"
+            />
+            <div id="autocomplete-list" class="autocomplete-list"></div>
+          </div>
+          <button id="submit-btn" class="submit-btn" aria-label="Submit guess">
+            <span data-i18n="guess">Guess</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+          <button id="giveup-btn" class="giveup-btn" data-i18n="giveUp" aria-label="Give up and reveal answer">Give Up</button>
+        </div>
+
+        <button id="next-btn" class="next-btn hidden" data-i18n="nextCountry" aria-label="Next country">Next Country →</button>
+      </div>
+    </div>
+
+    <!-- Stats Modal -->
+    <div id="stats-modal" class="modal-overlay hidden">
+      <div class="modal">
+        <button id="modal-close" class="modal-close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+        <div class="modal-header">
+          <svg class="modal-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <rect x="3" y="10" width="4" height="11" rx="1"/>
+            <rect x="10" y="6" width="4" height="15" rx="1"/>
+            <rect x="17" y="2" width="4" height="19" rx="1"/>
+          </svg>
+          <h2 data-i18n="stats">Statistics</h2>
+        </div>
+
+        <div id="modal-answer" class="modal-answer hidden"></div>
+        <div class="stats-section">
+          <h3 class="stats-section-title" data-i18n="daily">Daily</h3>
+          <div class="stats-grid">
+            <div class="stat">
+              <span id="d-games" class="stat-value">0</span>
+              <span class="stat-label" data-i18n="played">Played</span>
+            </div>
+            <div class="stat">
+              <span id="d-winrate" class="stat-value">0%</span>
+              <span class="stat-label" data-i18n="winRate">Win Rate</span>
+            </div>
+            <div class="stat">
+              <span class="stat-icon">🔥</span>
+              <span id="d-streak" class="stat-value">0</span>
+              <span class="stat-label" data-i18n="streak">Streak</span>
+            </div>
+            <div class="stat">
+              <span class="stat-icon">🔥</span>
+              <span id="d-maxstreak" class="stat-value">0</span>
+              <span class="stat-label" data-i18n="bestStreak">Best</span>
+            </div>
+          </div>
+          <div class="daily-result" id="daily-result"></div>
+          <button id="share-btn" class="share-btn" data-i18n="shareResults" aria-label="Share results">Share Results</button>
+        </div>
+
+        <div class="stats-section stats-section-alt">
+          <h3 class="stats-section-title" data-i18n="practice">Practice</h3>
+          <div class="stats-grid">
+            <div class="stat">
+              <span id="p-games" class="stat-value">0</span>
+              <span class="stat-label" data-i18n="played">Played</span>
+            </div>
+            <div class="stat">
+              <span id="p-winrate" class="stat-value">0%</span>
+              <span class="stat-label" data-i18n="winRate">Win Rate</span>
+            </div>
+            <div class="stat">
+              <span class="stat-icon">🔥</span>
+              <span id="p-streak" class="stat-value">0</span>
+              <span class="stat-label" data-i18n="streak">Streak</span>
+            </div>
+            <div class="stat">
+              <span class="stat-icon">🔥</span>
+              <span id="p-maxstreak" class="stat-value">0</span>
+              <span class="stat-label" data-i18n="bestStreak">Best</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal-overlay hidden">
+      <div class="modal info-modal-content">
+        <button id="info-modal-close" class="modal-close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+        <div class="modal-header">
+          <svg class="modal-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          <h2 data-i18n="aboutTitle">About GeoShape</h2>
+        </div>
+        <div class="info-body">
+          <p class="info-story" data-i18n="aboutStory">I am a huge fan of traveling and geography. This passion inspired me to build GeoShape as a way to combine my interests with the power of modern technology.</p>
+          <p class="info-developer" data-i18n="aboutDeveloper">Developed by Diego Bouza</p>
+
+          <div class="info-socials">
+            <a href="https://github.com/diegobp99" target="_blank" rel="noopener" class="info-social-link" aria-label="GitHub">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+              </svg>
+            </a>
+            <a href="https://www.linkedin.com/in/diego-bouza-pena/" target="_blank" rel="noopener" class="info-social-link" aria-label="LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+            </a>
+            <a href="https://www.instagram.com/diego_bouza/?hl=es" target="_blank" rel="noopener" class="info-social-link" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+              </svg>
+            </a>
+          </div>
+          <p class="info-star" data-i18n="aboutStar">Give it a &#9733; on GitHub if you like it!</p>
+        </div>
+      </div>
+    </div>
+    <!-- UFO Ship (Easter Egg) -->
+    <div id="ufo-ship" class="ufo-ship" aria-hidden="true">
+      <svg width="80" height="40" viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="40" cy="30" rx="35" ry="8" fill="#94a3b8" opacity="0.9"/>
+        <ellipse cx="40" cy="28" rx="30" ry="6" fill="#cbd5e1"/>
+        <path d="M40 10 Q40 0 25 5 Q20 8 20 15 Q20 25 40 28 Q60 25 60 15 Q60 8 55 5 Q40 0 40 10Z" fill="#64748b"/>
+        <ellipse cx="40" cy="14" rx="12" ry="6" fill="#38bdf8" opacity="0.6"/>
+        <circle cx="40" cy="14" r="4" fill="#e0f2fe"/>
+        <ellipse cx="40" cy="30" rx="20" ry="3" fill="#fbbf24" opacity="0.5"/>
+        <ellipse cx="10" cy="31" rx="6" ry="2" fill="#fbbf24" opacity="0.4"/>
+        <ellipse cx="70" cy="31" rx="6" ry="2" fill="#fbbf24" opacity="0.4"/>
+      </svg>
+    </div>
+    </main>
+
+    <footer class="game-footer">
+      <div class="footer-inner">
+        <svg class="footer-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <polygon points="100,10 180,55 180,145 100,190 20,145 20,55" stroke="currentColor" stroke-width="3" stroke-linejoin="round" opacity="0.5"/>
+          <circle cx="100" cy="100" r="60" stroke="currentColor" stroke-width="2" opacity="0.4"/>
+          <polygon points="100,85 115,100 100,115 85,100" fill="currentColor" opacity="0.5"/>
+        </svg>
+        <p>GeoShape © 2026</p>
+      </div>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "eb81fad898fe4020802e2edecb2a3e7d"}'></script>
+</body>
+</html>

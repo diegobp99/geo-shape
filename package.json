@@ -1,0 +1,11 @@
+{
+  "name": "geoshape",
+  "version": "1.0.0",
+  "description": "A Wordle-style geography guessing game",
+  "private": true,
+  "scripts": {
+    "generate": "node generate-data.mjs",
+    "dev": "npx http-server . -p 8080 -c-1",
+    "start": "npx http-server . -p 8080 -c-1"
+  }
+}

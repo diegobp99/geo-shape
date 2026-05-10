@@ -80,7 +80,6 @@ const i18n = {
     distance: 'Distance',
     dir: 'Dir',
     prox: 'Prox',
-    mysteryCountry: 'Mystery Country',
     countrySilhouette: 'Country silhouette',
     correct: 'Correct! \u2705',
     itWas: 'It was {name}',
@@ -120,7 +119,6 @@ const i18n = {
     distance: 'Distancia',
     dir: 'Dir',
     prox: 'Cercan\u00eda',
-    mysteryCountry: 'Pa\u00eds Misterioso',
     countrySilhouette: 'Silueta del pa\u00eds',
     correct: '\u00a1Correcto! \u2705',
     itWas: 'Era {name}',
@@ -643,14 +641,24 @@ function updateStreakDisplay() {
 
 function updateAttemptsLabel() {
   const remaining = maxGuesses - guesses.length;
+  const textSpan = attemptsLabel.querySelector('.attempts-text');
   if (remaining <= 0) {
-    attemptsLabel.textContent = '';
+    attemptsLabel.style.display = 'none';
     return;
   }
+  attemptsLabel.style.display = 'inline-flex';
   if (remaining === 1) {
-    attemptsLabel.textContent = getT('guessRemaining', { n: 1 });
+    textSpan.textContent = getT('guessRemaining', { n: 1 });
   } else {
-    attemptsLabel.textContent = getT('guessesRemaining', { n: remaining });
+    textSpan.textContent = getT('guessesRemaining', { n: remaining });
+  }
+  attemptsLabel.classList.remove('attempts-safe', 'attempts-warning', 'attempts-danger');
+  if (remaining <= 1) {
+    attemptsLabel.classList.add('attempts-danger');
+  } else if (remaining <= 2) {
+    attemptsLabel.classList.add('attempts-warning');
+  } else {
+    attemptsLabel.classList.add('attempts-safe');
   }
 }
 

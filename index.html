@@ -142,25 +142,21 @@
           <div id="hint-text" class="hint-text" data-i18n="countrySilhouette">Country silhouette</div>
         </div>
         <div class="map-info">
-          <span class="map-label" id="map-label" data-i18n="mysteryCountry">Mystery Country</span>
-          <span class="map-attempts" id="attempts-label">6 guesses remaining</span>
+          <div class="attempts-badge attempts-safe" id="attempts-label">
+            <svg class="attempts-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="3"/>
+              <line x1="12" y1="2" x2="12" y2="6"/>
+              <line x1="12" y1="18" x2="12" y2="22"/>
+              <line x1="2" y1="12" x2="6" y2="12"/>
+              <line x1="18" y1="12" x2="22" y2="12"/>
+            </svg>
+            <span class="attempts-text">6 guesses remaining</span>
+          </div>
         </div>
       </div>
 
       <div class="game-panel">
-        <div id="guess-grid" class="guess-grid">
-          <div class="grid-header">
-            <span class="header-cell guess-cell-label" data-i18n="country">Country</span>
-            <span class="header-cell" data-i18n="distance">Distance</span>
-            <span class="header-cell" data-i18n="dir">Dir</span>
-            <span class="header-cell" data-i18n="prox">Prox</span>
-          </div>
-          <div id="grid-rows" class="grid-rows"></div>
-        </div>
-
-        <div id="answer-banner" class="answer-banner hidden">
-          <span id="answer-banner-text"></span>
-        </div>
         <div id="input-area" class="input-area">
           <div class="autocomplete-wrapper">
             <input
@@ -182,6 +178,19 @@
             </svg>
           </button>
           <button id="giveup-btn" class="giveup-btn" data-i18n="giveUp" aria-label="Give up and reveal answer">Give Up</button>
+        </div>
+
+        <div id="answer-banner" class="answer-banner hidden">
+          <span id="answer-banner-text"></span>
+        </div>
+        <div id="guess-grid" class="guess-grid">
+          <div class="grid-header">
+            <span class="header-cell guess-cell-label" data-i18n="country">Country</span>
+            <span class="header-cell" data-i18n="distance">Distance</span>
+            <span class="header-cell" data-i18n="dir">Dir</span>
+            <span class="header-cell" data-i18n="prox">Prox</span>
+          </div>
+          <div id="grid-rows" class="grid-rows"></div>
         </div>
 
         <button id="next-btn" class="next-btn hidden" data-i18n="nextCountry" aria-label="Next country">Next Country →</button>
